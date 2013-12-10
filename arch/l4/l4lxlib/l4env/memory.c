@@ -37,13 +37,16 @@ int l4lx_memory_map_virtual_page(unsigned long address, pte_t pte)
 		WARN_ON(1);
 		return -1;
 	}
+	//printk("%s: address=%lx exec=%d\n", __func__, address, pte_exec(pte));
 
 	offset += (pte_val(pte) & PAGE_MASK) - addr;
 	addr    = address & PAGE_MASK;
 	if ((r = L4XV_FN_i(l4re_rm_attach((void **)&addr, PAGE_SIZE,
 	                                  L4RE_RM_IN_AREA | L4RE_RM_EAGER_MAP
 	                                   | ((pte_write(pte)
-	                                      ? 0 : L4RE_RM_READ_ONLY)),
+	                                      ? 0 : L4RE_RM_READ_ONLY))
+									   | ((pte_exec(pte)
+									      ? L4RE_RM_EXECUTABLE : 0)),
 	                                  ds, offset, L4_PAGESHIFT)))) {
 
 		if (r == -L4_EADDRNOTAVAIL) {
@@ -79,7 +82,7 @@ int l4lx_memory_map_virtual_page(unsigned long address, pte_t pte)
 }
 
 int l4lx_memory_map_virtual_range(unsigned long address, unsigned long size,
-                                  unsigned long page, int map_rw)
+                                  unsigned long page, int map_rw, int map_exec)
 {
 	unsigned long end;
 	l4_addr_t addr, offset;
@@ -106,7 +109,8 @@ int l4lx_memory_map_virtual_range(unsigned long address, unsigned long size,
 			s = end - address;
 		r = L4XV_FN_i(l4re_rm_attach((void **)&addr, s,
 		                             L4RE_RM_IN_AREA | L4RE_RM_EAGER_MAP
-				             | (map_rw ? 0 : L4RE_RM_READ_ONLY),
+				             | (map_rw ? 0 : L4RE_RM_READ_ONLY)
+							 | (map_exec ? L4RE_RM_EXECUTABLE : 0),
 				             ds, offset, L4_PAGESHIFT));
 		if (r) {
 			// FIXME wrt L4_EUSED?

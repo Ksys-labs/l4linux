@@ -24,7 +24,7 @@
 int l4lx_memory_map_virtual_page(unsigned long address, pte_t pte);
 
 int l4lx_memory_map_virtual_range(unsigned long address, unsigned long size,
-                                  unsigned long page, int map_rw);
+                                  unsigned long page, int map_rw, int map_exec);
 
 /**
  * \brief Unmap a page from the virtual address space.

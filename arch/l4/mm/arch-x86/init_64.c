@@ -1294,7 +1294,7 @@ static int __meminit vmemmap_populate_hugepages(unsigned long start,
 				}
 
 #ifdef CONFIG_L4
-				l4lx_memory_map_virtual_range(addr, PMD_SIZE, __pa(p), 1);
+				l4lx_memory_map_virtual_range(addr, PMD_SIZE, __pa(p), 1, pte_exec(entry));
 				// also register virtual mem...
 #endif
 				addr_end = addr + PMD_SIZE;

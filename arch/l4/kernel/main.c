@@ -1000,14 +1000,14 @@ static __init_refok void l4x_setup_upage(void)
 		l4x_linux_main_exit();
 	}
 
-	if (l4re_ma_alloc(L4_PAGESIZE, ds, L4RE_MA_PINNED)) {
+	if (l4re_ma_alloc(L4_PAGESIZE, ds, L4RE_MA_PINNED|L4RE_MA_EXECUTABLE)) {
 		LOG_printf("Memory request for upage failed\n");
 		l4x_linux_main_exit();
 	}
 
 	upage_addr = UPAGE_USER_ADDRESS;
 	if (l4re_rm_attach((void **)&upage_addr, L4_PAGESIZE,
-	                   L4RE_RM_SEARCH_ADDR,
+	                   L4RE_RM_SEARCH_ADDR | L4RE_RM_EXECUTABLE,
 	                   ds, 0, L4_PAGESHIFT)) {
 		LOG_printf("Cannot attach upage properly\n");
 		l4x_linux_main_exit();
@@ -1126,7 +1126,7 @@ void __init l4x_setup_memory(char *cmdl,
 	void *a;
 	l4_addr_t memory_area_id = (l4_addr_t)&_text;
 	int virt_phys_alignment = L4_SUPERPAGESHIFT;
-	l4_uint32_t dm_flags = L4RE_MA_CONTINUOUS | L4RE_MA_PINNED;
+	l4_uint32_t dm_flags = L4RE_MA_CONTINUOUS | L4RE_MA_PINNED | L4RE_MA_EXECUTABLE;
 	int i;
 	unsigned long mem_chunk_sz[ARRAY_SIZE(l4x_ds_mainmem)];
 	unsigned num_mem_chunk = 0;
@@ -1324,7 +1324,7 @@ void __init l4x_setup_memory(char *cmdl,
 	a = l4x_main_memory_start;
 	for (i = 0; i < num_mem_chunk; ++i) {
 		res = l4re_rm_attach(&a, mem_chunk_sz[i],
-		                     L4RE_RM_IN_AREA | L4RE_RM_EAGER_MAP,
+		                     L4RE_RM_IN_AREA | L4RE_RM_EAGER_MAP | L4RE_RM_EXECUTABLE,
 		                     l4x_ds_mainmem[i], 0,
 		                     MAX_ORDER + PAGE_SHIFT);
 		if (res) {
@@ -1358,7 +1358,7 @@ void __init l4x_setup_memory(char *cmdl,
 	l4x_fixmap_space_start = (unsigned long)l4x_main_memory_start;
 	if (l4re_rm_reserve_area(&l4x_fixmap_space_start,
 	                         __end_of_fixed_addresses * PAGE_SIZE,
-	                         L4RE_RM_SEARCH_ADDR, PAGE_SHIFT) < 0) {
+	                         L4RE_RM_SEARCH_ADDR | L4RE_RM_EXECUTABLE, PAGE_SHIFT) < 0) {
 		LOG_printf("%s: Failed reserving fixmap space!\n", __func__);
 		l4x_exit_l4linux();
 	}

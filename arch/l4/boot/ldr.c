@@ -127,6 +127,7 @@ int main(int argc, char **argv)
 			}
 
 			if (l4re_ma_alloc(ph->p_memsz, ds,
+							  (ph->p_flags & PF_X ? L4RE_MA_EXECUTABLE : 0) |
 			                  L4RE_MA_CONTINUOUS | L4RE_MA_PINNED)) {
 				printf("lxldr: could not allocate memory\n");
 				return 1;
@@ -134,8 +135,10 @@ int main(int argc, char **argv)
 
 			map_addr = ph->p_paddr;
 			if (l4re_rm_attach((void **)&map_addr,
-			                    ph->p_memsz, L4RE_RM_EAGER_MAP,
-			                    ds, 0, 0)) {
+			                    ph->p_memsz,
+								L4RE_RM_EAGER_MAP
+								| ((ph->p_flags & PF_X) ? L4RE_RM_EXECUTABLE : 0)
+								,ds, 0, 0)) {
 				printf("lxldr: failed attaching memory:"
 				       " "FMT" - "FMT"\n",
 				       ph->p_paddr,
@@ -157,6 +160,7 @@ int main(int argc, char **argv)
 		}
 
 		if (l4re_ma_alloc(ph->p_memsz, new_ds,
+						(ph->p_flags & PF_X ? L4RE_MA_EXECUTABLE : 0) |
 		                  L4RE_MA_CONTINUOUS | L4RE_MA_PINNED)) {
 			printf("lxldr: could not allocate memory\n");
 			return 1;
@@ -181,7 +185,9 @@ int main(int argc, char **argv)
 
 		map_addr = ph->p_paddr;
 		if (l4re_rm_attach((void **)&map_addr,
-		                    ph->p_memsz, L4RE_RM_EAGER_MAP,
+		                    ph->p_memsz,
+							L4RE_RM_EAGER_MAP
+							| ((ph->p_flags & PF_X) ? L4RE_RM_EXECUTABLE : 0),
 		                    new_ds, 0, 0)) {
 			printf("lxldr: failed to attach section\n");
 			return 1;
